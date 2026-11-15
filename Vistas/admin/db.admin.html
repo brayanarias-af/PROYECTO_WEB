@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,44 +24,44 @@
       </div>
 
       <div class="sidebar">
-        <a href="#" class="active">
+        <a href="#dashboard" class="active">
           <span class="material-icons-sharp"> dashboard </span>
           <h3>Dashboard</h3>
         </a>
-        <a href="#">
+        <a href="#estudiantes">
           <span class="material-icons-sharp"> school </span>
           <h3>Estudiantes</h3>
         </a>
-        <a href="#">
+        <a href="#profesores">
           <span class="material-icons-sharp"> person_outline </span>
           <h3>Profesores</h3>
         </a>
-        <a href="#">
+        <a href="#usuarios">
+          <span class="material-icons-sharp"> manage_accounts </span>
+          <h3>Usuarios</h3>
+        </a>
+        <a href="#materias">
           <span class="material-icons-sharp"> menu_book </span>
           <h3>Materias</h3>
         </a>
-        <a href="#">
+        <a href="#notas">
           <span class="material-icons-sharp"> grade </span>
           <h3>Notas</h3>
         </a>
-        <a href="#">
+        <a href="#mensajes">
           <span class="material-icons-sharp"> mail_outline </span>
           <h3>Mensajes</h3>
           <span class="message-count">26</span>
         </a>
-        <a href="#">
+        <a href="#reportes">
           <span class="material-icons-sharp"> report_gmailerrorred </span>
           <h3>Reportes</h3>
         </a>
-        <a href="#">
+        <a href="#configuracion">
           <span class="material-icons-sharp"> settings </span>
           <h3>Configuración</h3>
         </a>
-        <a href="#">
-          <span class="material-icons-sharp"> add </span>
-          <h3>Agregar materia</h3>
-        </a>
-        <a href="#">
+        <a href="../autenticacion/login.html">
           <span class="material-icons-sharp"> logout </span>
           <h3>Cerrar sesión</h3>
         </a>
@@ -69,14 +69,16 @@
     </aside>
 
     <main>
-      <h1>Panel de administración</h1>
 
-      <div class="date">
+      <h1 id="titulo-vista">Panel de administración</h1>
+      <!-- Vista principal o de inicio -->
+      <section class="vista activa" id="vista-dashboard" aria-label="Dashboard">
+        <div class="date">
         <input type="date" />
       </div>
 
       <div class="insights">
-        <!-- ESTUDIANTES MATRICULADOS -->
+        <!-- Estudiantes Matriculados -->
         <div class="sales">
           <span class="material-icons-sharp"> school </span>
           <div class="middle">
@@ -96,7 +98,7 @@
           <small class="text-muted" id="small-estudiantes"> Sin cancelaciones </small>
         </div>
 
-        <!-- MATERIAS CANCELADAS -->
+        <!-- Materias canceladas -->
         <div class="expenses">
           <span class="material-icons-sharp"> event_busy </span>
           <div class="middle">
@@ -116,7 +118,7 @@
           <small class="text-muted"> Del total de matrículas </small>
         </div>
 
-        <!-- MATERIAS COMPLETAS -->
+        <!-- Materias completas -->
         <div class="income">
           <span class="material-icons-sharp"> task_alt </span>
           <div class="middle">
@@ -147,6 +149,7 @@
             <option value="En curso">En curso</option>
           </select>
         </div>
+        <div class="tabla-scroll">
         <table id="recent-orders--table">
           <thead>
             <tr>
@@ -160,8 +163,15 @@
           </thead>
           <tbody id="tabla-registros"></tbody>
         </table>
+        </div>
         <a href="#">Ver todos</a>
       </div>
+
+      </section>
+
+      <!-- Las demás vistas se cargan aquí desde Vistas/admin/vistas/<nombre>/ (ver js/navegacion.js) -->
+      <div id="contenedor-vistas"></div>
+
     </main>
 
     <div class="right">
@@ -192,19 +202,19 @@
         <div id="analytics">
           <!-- JS: db.admin.js -->
         </div>
-        <div class="item add-product">
+        <div class="item add-product" data-vista="materias">
           <div>
             <span class="material-icons-sharp"> add </span>
             <h3>Agregar materia</h3>
           </div>
         </div>
-        <div class="item add-product">
+        <div class="item add-product" data-vista="estudiantes">
           <div>
             <span class="material-icons-sharp"> add </span>
             <h3>Agregar estudiante</h3>
           </div>
         </div>
-        <div class="item add-product">
+        <div class="item add-product" data-vista="profesores">
           <div>
             <span class="material-icons-sharp"> add </span>
             <h3>Agregar profesor</h3>
@@ -214,6 +224,8 @@
     </div>
   </div>
 
+  <script src="../../js/utils.js"></script>
   <script src="../../js/db.admin.js"></script>
+  <script src="../../js/navegacion.js"></script>
 </body>
 </html>

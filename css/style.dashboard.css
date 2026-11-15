@@ -52,8 +52,8 @@ html {
   font-size: 14px;
 }
 body {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100vh;
   font-family: poppins, sans-serif;
   font-size: 0.88rem;
   background: var(--color-background);
@@ -66,7 +66,7 @@ body {
   width: 96%;
   margin: 0 auto;
   gap: 1.8rem;
-  grid-template-columns: 14rem auto 23rem;
+  grid-template-columns: 14rem minmax(0, 1fr) 23rem;
 }
 a {
   color: var(--color-dark);
@@ -208,6 +208,7 @@ aside .sidebar .message-count {
 /* START MAIN */
 main {
   margin-top: 1.4rem;
+  min-width: 0;
 }
 
 /* START DATE INPUT */
@@ -227,7 +228,7 @@ main .date input[type="date"] {
 /* START INSIGHTS */
 main .insights {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 1.6rem;
 }
 main .insights > div {
@@ -478,67 +479,77 @@ main .recent-orders a {
 /* END SALES ANALYTICS */
 /* END RIGHT SECTION */
 
-/* START MEDIA QUERIES */
-/* TABLETS AND SMALL LAPTOPS */
+/* START MEDIA QUERIES (mobile first en la práctica: escritorio → tablet → celular) */
+
+/* Tabla con scroll horizontal en vez de salirse de la pantalla */
+.tabla-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--card-border-radius);
+}
+main .recent-orders table {
+  min-width: 36rem;
+}
+
+/* LAPTOPS PEQUEÑAS Y TABLETS HORIZONTALES */
 @media screen and (max-width: 1200px) {
   .container {
-    width: 94%;
-    grid-template-columns: 7rem auto 23rem;
+    width: 96%;
+    grid-template-columns: 6rem minmax(0, 1fr) 19rem;
+    gap: 1.2rem;
   }
-  aside .logo h2 {
-    display: none;
-  }
+  aside .logo h2,
   aside .sidebar h3 {
     display: none;
   }
   aside .sidebar a {
+    width: 4.6rem;
+    margin-left: 1rem;
+  }
+  aside .sidebar a.active {
+    margin-left: 0;
     width: 5.6rem;
   }
   aside .sidebar a:last-child {
     position: relative;
     margin-top: 1.8rem;
+    bottom: auto;
   }
-  main .insights {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-  main .recent-orders {
-    width: 94%;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    margin: 2rem 0 0 8.8rem;
-  }
-  main .recent-orders table {
-    width: 83vw;
-  }
-  main .recent-orders table thead tr th:first-child,
-  main .recent-orders table thead tr th:last-child {
+  aside .sidebar .message-count {
     display: none;
   }
-  main .recent-orders table tbody tr td:first-child,
-  main .recent-orders table tbody tr td:last-child {
-    display: none;
+  .right .top {
+    gap: 1rem;
+  }
+  .right .top .profile {
+    gap: 0.8rem;
   }
 }
 
-/* SMALL TABLETS AND MOBILE */
-@media screen and (max-width: 768px) {
+/* TABLETS VERTICALES Y CELULARES: menú tipo hamburguesa */
+@media screen and (max-width: 900px) {
   .container {
     width: 100%;
     grid-template-columns: 1fr;
+    gap: 0;
   }
   aside {
     position: fixed;
+    top: 0;
     left: -100%;
     background: var(--color-white);
-    width: 18rem;
-    z-index: 3;
+    width: min(18rem, 85vw);
+    z-index: 5;
     box-shadow: 1rem 3rem 4rem var(--color-light);
     height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
     padding-right: var(--card-padding);
     display: none;
-    animation: showMenu 400ms ease forwards;
+  }
+  aside.abierto {
+    display: block;
+    animation: showMenu 300ms ease forwards;
   }
   @keyframes showMenu {
     to {
@@ -548,58 +559,58 @@ main .recent-orders a {
   aside .logo {
     margin-left: 1rem;
   }
-  aside .logo h2 {
-    display: inline;
-  }
+  aside .logo h2,
   aside .sidebar h3 {
     display: inline;
   }
-  aside .sidebar a {
+  aside .sidebar {
+    height: auto;
+    top: 1.5rem;
+    padding-bottom: 2rem;
+  }
+  aside .sidebar a,
+  aside .sidebar a.active {
     width: 100%;
     height: 3.4rem;
   }
   aside .sidebar a:last-child {
-    position: absolute;
-    bottom: 5rem;
+    position: relative;
+    bottom: auto;
+    margin-top: 1rem;
+  }
+  aside .sidebar .message-count {
+    display: inline;
   }
   aside .close {
     display: inline-block;
     cursor: pointer;
   }
   main {
-    margin-top: 8rem;
+    margin-top: 6.4rem;
     padding: 0 1rem;
   }
-  main .recent-orders {
-    position: relative;
-    margin: 3rem 0 0 0;
-    width: 100%;
-  }
-  main .recent-orders table {
-    width: 100%;
-    margin: 0;
-  }
   .right {
-    width: 94%;
-    margin: 0 auto 4rem;
+    width: 100%;
+    padding: 0 1rem;
+    margin: 0 auto 3rem;
   }
   .right .top {
     position: fixed;
     top: 0;
     left: 0;
     align-items: center;
-    padding: 0 0.8rem;
+    justify-content: space-between;
+    padding: 0 1rem 0 4rem;
     height: 4.6rem;
     background: var(--color-white);
     width: 100%;
     margin: 0;
-    z-index: 2;
+    z-index: 4;
     box-shadow: 0 1rem 1rem var(--color-light);
   }
   .right .top .theme-toggler {
+    position: static;
     width: 4.4rem;
-    position: absolute;
-    left: 66%;
   }
   .right .top .profile .info {
     display: none;
@@ -615,5 +626,71 @@ main .recent-orders a {
   .right .top button span {
     font-size: 2rem;
   }
+  /* Tarjetas del panel derecho en dos columnas cuando hay espacio */
+  .right .sales-analytics #analytics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    column-gap: 0.8rem;
+  }
+}
+
+/* CELULARES */
+@media screen and (max-width: 600px) {
+  html {
+    font-size: 13px;
+  }
+  h1 {
+    font-size: 1.5rem;
+  }
+  main {
+    padding: 0 0.8rem;
+  }
+  main .insights {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  main .recent-orders .encabezado-tabla {
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  :root {
+    --card-padding: 1.3rem;
+  }
 }
 /* END MEDIA QUERIES */
+
+/* ===== Vistas (SPA): solo se muestra la vista activa ===== */
+.vista {
+  display: none;
+}
+.vista.activa {
+  display: block;
+}
+
+/* Encabezado de la tabla de movimientos (título + filtro) */
+main .recent-orders .encabezado-tabla {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+main .recent-orders .encabezado-tabla h2 {
+  margin-bottom: 0;
+}
+.filtro-estado {
+  height: 2.4rem;
+  padding: 0 0.8rem;
+  border-radius: var(--border-radius-2);
+  background: var(--color-white);
+  color: var(--color-dark);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Laptops de poca altura: menú más compacto para que quepan todas las opciones */
+@media screen and (min-width: 901px) and (max-height: 820px) {
+  aside .sidebar a {
+    height: 3rem;
+  }
+}

@@ -1,6 +1,35 @@
-let REGISTROS_DATA = [];
-let ESTUDIANTES_DATA = [];
-let PROFESORES_DATA = [];
+// Registros académicos: se arman con las notas guardadas en la vista Notas
+function construirRegistros() {
+  const estudiantes = NovaUtils.leer("nova_estudiantes");
+  return NovaUtils.leer("nova_notas").map((r) => {
+    const c = NovaUtils.calcular(r);
+    const e = estudiantes.find((x) => x.id === r.estudianteId);
+    return {
+      codigo: e ? e.codigo : "—",
+      estudiante: e ? e.nombre : r.estudianteNombre || "—",
+      materia: r.materia,
+      nota: c.completo ? c.acumulado : null,
+      estado: c.completo ? "Completa" : "En curso",
+    };
+  });
+}
+const leerProfesoresActivos = () =>
+  NovaUtils.leer("nova_profesores").filter((p) => p.estado === "Activo");
+
+let REGISTROS_DATA = construirRegistros();
+// Estudiantes guardados por la vista Estudiantes (localStorage).
+// Solo los activos cuentan como matriculados.
+function leerEstudiantesGuardados() {
+  try {
+    const datos = JSON.parse(localStorage.getItem("nova_estudiantes"));
+    return Array.isArray(datos) ? datos.filter((e) => e.estado === "Activo") : [];
+  } catch {
+    return [];
+  }
+}
+
+let ESTUDIANTES_DATA = leerEstudiantesGuardados();
+let PROFESORES_DATA = leerProfesoresActivos();
 let UPDATE_DATA = [];
 
 const STATUS_COLOR = {
@@ -188,6 +217,9 @@ const buildSalesAnalytics = (element) => {
 
 // Refresca todo el panel (llámala después de cargar o cambiar los datos)
 const refreshDashboard = () => {
+  ESTUDIANTES_DATA = leerEstudiantesGuardados();
+  REGISTROS_DATA = construirRegistros();
+  PROFESORES_DATA = leerProfesoresActivos();
   buildInsights();
   renderTableBody(document.getElementById("filtro-estado").value);
 
@@ -196,6 +228,10 @@ const refreshDashboard = () => {
   document.getElementsByClassName("recent-updates").item(0).appendChild(buildUpdatesList());
 
   buildSalesAnalytics(document.getElementById("analytics"));
+
+  // Avisa a las vistas cargadas (estudiantes, profesores, materias, notas, usuarios)
+  // para que recarguen sus datos desde localStorage
+  window.dispatchEvent(new Event("nova:datos"));
 };
 
 // Document operation functions
@@ -206,18 +242,28 @@ const themeToggler = document.querySelector(".theme-toggler");
 
 // Show Sidebar
 menuBtn.addEventListener("click", () => {
-  sideMenu.style.display = "block";
+  sideMenu.classList.add("abierto");
 });
 
 // Hide Sidebar
 closeBtn.addEventListener("click", () => {
-  sideMenu.style.display = "none";
+  sideMenu.classList.remove("abierto");
 });
 
-// Change Theme
-themeToggler.addEventListener("click", () => {
-  document.body.classList.toggle("dark-theme-variables");
+// Change Theme (se guarda en localStorage para que no se pierda al cambiar de vista ni al recargar)
+const setTheme = (oscuro) => {
+  document.body.classList.toggle("dark-theme-variables", oscuro);
+  themeToggler.querySelector("span:nth-child(1)").classList.toggle("active", !oscuro);
+  themeToggler.querySelector("span:nth-child(2)").classList.toggle("active", oscuro);
+  try {
+    localStorage.setItem("tema", oscuro ? "oscuro" : "claro");
+  } catch {}
+};
 
-  themeToggler.querySelector("span:nth-child(1)").classList.toggle("active");
-  themeToggler.querySelector("span:nth-child(2)").classList.toggle("active");
-});
+themeToggler.addEventListener("click", () =>
+  setTheme(!document.body.classList.contains("dark-theme-variables"))
+);
+
+try {
+  if (localStorage.getItem("tema") === "oscuro") setTheme(true);
+} catch {}
