@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Colegio Nova | Panel del profesor</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.dashboard.css" />
+  <link rel="stylesheet" href="profesor.css" />
+
+  <!-- Si no hay sesión de profesor, vuelve al login -->
+  <script src="../../js/sesion.js"></script>
+  <script>
+    (() => {
+      const s = NovaSesion.actual();
+      if (!s || s.rol !== "profesor") location.replace("../autenticacion/login.html");
+    })();
+  </script>
+</head>
+<body>
+  <div class="container">
+    <aside>
+      <div class="top">
+        <div class="logo">
+          <img src="../../img/img.dashboard/icono-nova.png" alt="Logo Colegio Nova" />
+          <h2>NO<span class="danger">VA</span></h2>
+        </div>
+        <div class="close" id="close-btn">
+          <span class="material-icons-sharp"> close </span>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <a href="#materias" class="active">
+          <span class="material-icons-sharp"> menu_book </span>
+          <h3>Mis materias</h3>
+        </a>
+        <a href="#notas">
+          <span class="material-icons-sharp"> grade </span>
+          <h3>Notas</h3>
+        </a>
+        <a href="#cuenta">
+          <span class="material-icons-sharp"> manage_accounts </span>
+          <h3>Mi cuenta</h3>
+        </a>
+        <a href="../autenticacion/login.html" id="cerrar-sesion">
+          <span class="material-icons-sharp"> logout </span>
+          <h3>Cerrar sesión</h3>
+        </a>
+      </div>
+    </aside>
+
+    <main>
+      <h1 id="titulo-vista">Mis materias</h1>
+
+      <!-- ===== VISTA: MIS MATERIAS ===== -->
+      <section class="vista activa" id="vista-materias" aria-label="Mis materias">
+        <p class="ea-nota-info" id="ep-mat-info"></p>
+        <div class="ea-materias" id="ep-mat-lista"></div>
+        <div class="ea-panel ea-vacio" id="ep-mat-vacio" hidden>
+          <span class="material-icons-sharp">menu_book</span>
+          <h3>Aún no tienes materias asignadas</h3>
+          <p>Cuando el administrador te asigne una materia, aparecerá aquí.</p>
+        </div>
+
+        <!-- Lista de estudiantes de una materia -->
+        <dialog id="ep-est-modal" class="ea-modal" aria-labelledby="ep-est-titulo">
+          <div class="ea-modal-cuerpo">
+            <div class="ea-modal-cab">
+              <div><h2 id="ep-est-titulo">Estudiantes</h2><small id="ep-est-sub"></small></div>
+              <button type="button" class="ea-icono-btn" id="ep-est-cerrar" aria-label="Cerrar"><span class="material-icons-sharp">close</span></button>
+            </div>
+            <ul class="ea-lista-est" id="ep-est-lista"></ul>
+          </div>
+        </dialog>
+      </section>
+
+      <!-- ===== VISTA: NOTAS ===== -->
+      <section class="vista" id="vista-notas" aria-label="Notas">
+        <div class="ea-barra">
+          <label for="ep-materia">Materia</label>
+          <select id="ep-materia"></select>
+        </div>
+
+        <div class="ea-pesos" aria-label="Porcentajes de la nota final">
+          <span><b>10%</b> Autoevaluación</span>
+          <span><b>30%</b> Tareas, talleres y quices</span>
+          <span><b>60%</b> Parcial</span>
+        </div>
+
+        <div class="ea-tabs" id="ep-tabs" role="tablist" aria-label="Periodo académico">
+          <button type="button" role="tab" class="ea-tab activo" data-tab="1" aria-selected="true">Periodo 1</button>
+          <button type="button" role="tab" class="ea-tab" data-tab="2" aria-selected="false">Periodo 2</button>
+          <button type="button" role="tab" class="ea-tab" data-tab="3" aria-selected="false">Periodo 3</button>
+          <button type="button" role="tab" class="ea-tab" data-tab="4" aria-selected="false">Periodo 4</button>
+          <button type="button" role="tab" class="ea-tab" data-tab="def" aria-selected="false">Definitiva</button>
+        </div>
+
+        <div class="ea-panel">
+          <p class="ea-nota-info ea-resumen-linea" id="ep-resumen"></p>
+
+          <div class="ea-tabla-wrap" id="ep-tabla-periodo">
+            <table class="ea-tabla">
+              <thead>
+                <tr>
+                  <th>Estudiante</th><th>Autoeval. (10%)</th><th>Tareas, talleres y quices (30%)</th>
+                  <th>Parcial (60%)</th><th>Nota final</th><th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="ep-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="ea-tabla-wrap" id="ep-tabla-def" hidden>
+            <table class="ea-tabla">
+              <thead>
+                <tr><th>Estudiante</th><th>Periodo 1</th><th>Periodo 2</th><th>Periodo 3</th><th>Periodo 4</th><th>Definitiva</th></tr>
+              </thead>
+              <tbody id="ep-def-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="ea-vacio" id="ep-vacio" hidden>
+            <span class="material-icons-sharp">grade</span>
+            <h3 id="ep-vacio-titulo"></h3>
+            <p id="ep-vacio-texto"></p>
+          </div>
+        </div>
+
+        <!-- Registrar / editar notas -->
+        <dialog id="ep-modal" class="ea-modal" aria-labelledby="ep-modal-titulo">
+          <form id="ep-form" novalidate>
+            <div class="ea-modal-cab">
+              <div><h2 id="ep-modal-titulo">Registrar notas</h2><small id="ep-modal-sub"></small></div>
+              <button type="button" class="ea-icono-btn" id="ep-cerrar" aria-label="Cerrar"><span class="material-icons-sharp">close</span></button>
+            </div>
+
+            <div class="ea-campos">
+              <div class="ea-campo">
+                <label for="ep-auto">Autoevaluación <em>(10%)</em></label>
+                <input type="text" id="ep-auto" inputmode="decimal" autocomplete="off" placeholder="0.0 - 5.0" />
+              </div>
+              <div class="ea-campo">
+                <label for="ep-parcial">Parcial <em>(60%)</em></label>
+                <input type="text" id="ep-parcial" inputmode="decimal" autocomplete="off" placeholder="0.0 - 5.0" />
+              </div>
+              <fieldset class="ea-campo ea-ancho">
+                <legend>Tareas, talleres y quices <em>(30%)</em></legend>
+                <p class="ea-ayuda">Agrega todas las notas que quieras: se promedian solas.</p>
+                <div id="ep-actividades"></div>
+                <button type="button" class="ea-btn ea-btn--suave ea-btn--chico" id="ep-agregar-act">
+                  <span class="material-icons-sharp">add</span> Agregar nota
+                </button>
+              </fieldset>
+            </div>
+
+            <div class="ea-preview" id="ep-preview" aria-live="polite"></div>
+            <p class="ea-error" id="ep-error" role="alert" hidden style="margin-top:1rem"></p>
+
+            <div class="ea-modal-pie">
+              <button type="button" class="ea-btn ea-btn--suave" id="ep-cancelar">Cancelar</button>
+              <button type="submit" class="ea-btn ea-btn--primario">Guardar notas</button>
+            </div>
+          </form>
+        </dialog>
+      </section>
+
+      <!-- ===== VISTA: MI CUENTA ===== -->
+      <section class="vista" id="vista-cuenta" aria-label="Mi cuenta">
+        <div class="ea-panel ea-cuenta" id="ea-cta-bloqueo">
+          <span class="ea-candado"><span class="material-icons-sharp">lock</span></span>
+          <h2>Sección protegida</h2>
+          <p>Por seguridad, escribe tu contraseña actual para editar tu usuario y contraseña.</p>
+          <form id="ea-cta-form-bloqueo" novalidate>
+            <div class="ea-campo">
+              <label for="ea-cta-clave-actual">Contraseña actual</label>
+              <div class="ea-clave">
+                <input type="password" id="ea-cta-clave-actual" autocomplete="current-password" />
+                <button type="button" class="ea-ojo" id="ea-cta-ver-actual" aria-label="Mostrar contraseña"><span class="material-icons-sharp">visibility</span></button>
+              </div>
+            </div>
+            <p class="ea-error" id="ea-cta-error-bloqueo" role="alert" hidden></p>
+            <button type="submit" class="ea-btn ea-btn--primario"><span class="material-icons-sharp">lock_open</span> Desbloquear</button>
+          </form>
+        </div>
+
+        <div class="ea-panel ea-cuenta ea-cuenta--ancha" id="ea-cta-edicion" hidden>
+          <div class="ea-cuenta-cab">
+            <h2>Mi usuario y contraseña</h2>
+            <button type="button" class="ea-btn ea-btn--suave" id="ea-cta-bloquear"><span class="material-icons-sharp">lock</span> Bloquear</button>
+          </div>
+          <dl class="ea-datos">
+            <div><dt>Nombre</dt><dd id="ea-dato-nombre"></dd></div>
+            <div><dt>Documento</dt><dd id="ea-dato-documento"></dd></div>
+            <div><dt>Materias</dt><dd id="ea-dato-materias"></dd></div>
+          </dl>
+          <p class="ea-nota-info">Estos datos los gestiona el administrador.</p>
+          <form id="ea-cta-form" novalidate>
+            <div class="ea-campo">
+              <label for="ea-cta-usuario">Usuario (correo con el que inicias sesión)</label>
+              <input type="email" id="ea-cta-usuario" autocomplete="username" />
+            </div>
+            <div class="ea-campo">
+              <label for="ea-cta-nueva">Nueva contraseña <em>(opcional)</em></label>
+              <div class="ea-clave">
+                <input type="password" id="ea-cta-nueva" autocomplete="new-password" placeholder="Mínimo 6 caracteres" />
+                <button type="button" class="ea-ojo" id="ea-cta-ver-nueva" aria-label="Mostrar contraseña"><span class="material-icons-sharp">visibility</span></button>
+              </div>
+            </div>
+            <div class="ea-campo">
+              <label for="ea-cta-repetir">Repite la nueva contraseña</label>
+              <input type="password" id="ea-cta-repetir" autocomplete="new-password" />
+            </div>
+            <p class="ea-error" id="ea-cta-error" role="alert" hidden></p>
+            <button type="submit" class="ea-btn ea-btn--primario"><span class="material-icons-sharp">save</span> Guardar cambios</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <div class="right">
+      <div class="top">
+        <button id="menu-btn" aria-label="Abrir menú">
+          <span class="material-icons-sharp"> menu </span>
+        </button>
+
+        <!-- Avisos -->
+        <div class="ea-avisos">
+          <button type="button" class="ea-campana" id="ea-campana" aria-label="Avisos" aria-expanded="false" aria-controls="ea-avisos-panel">
+            <span class="material-icons-sharp">notifications</span>
+            <span class="ea-badge" id="ea-badge" hidden>0</span>
+          </button>
+          <div class="ea-avisos-panel" id="ea-avisos-panel" hidden>
+            <div class="ea-avisos-cab">
+              <h3>Avisos</h3>
+              <button type="button" class="ea-link" id="ea-avisos-leer">Marcar todos como leídos</button>
+            </div>
+            <ul id="ea-avisos-lista"></ul>
+          </div>
+        </div>
+
+        <div class="theme-toggler">
+          <span class="material-icons-sharp active"> light_mode </span>
+          <span class="material-icons-sharp"> dark_mode </span>
+        </div>
+        <div class="profile">
+          <div class="info">
+            <p>Hola, <b id="ea-nombre-corto">Profesor</b></p>
+            <small class="text-muted" id="ea-rol">Profesor</small>
+          </div>
+          <div class="avatar" id="ea-avatar">PR</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ea-toast" id="ea-toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="../../modelos/almacenamiento.js"></script>
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/db.profesores.js"></script>
+  <script src="../../controladores/notas-profesor.controller.js"></script>
+  <script src="../../controladores/materias-profesor.controller.js"></script>
+  <script src="../../controladores/cuenta-profesor.controller.js"></script>
+</body>
+</html>
